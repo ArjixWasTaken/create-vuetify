@@ -240,6 +240,10 @@ async function init() {
 
   render(`config/vuetify/${iconPackToUse}`)
 
+  if (needsRouter) {
+    render('config/router')
+  }
+
   if (needsTypeScript) {
     render('config/typescript')
 
@@ -249,9 +253,7 @@ async function init() {
 
   // Render code template.
   // prettier-ignore
-  const codeTemplate =
-    (needsTypeScript ? 'typescript-' : '') +
-    (needsRouter ? 'router' : 'default')
+  const codeTemplate = (needsTypeScript && 'typescript-') + (needsRouter ? 'router' : 'default');
   render(`code/${codeTemplate}`)
 
   // Render entry file (main.js/ts).
