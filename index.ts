@@ -15,7 +15,6 @@ import renderTemplate from './utils/renderTemplate'
 import { postOrderDirectoryTraverse, preOrderDirectoryTraverse } from './utils/directoryTraverse'
 import generateReadme from './utils/generateReadme'
 import getCommand from './utils/getCommand'
-import renderEslint from './utils/renderEslint'
 import { FILES_TO_FILTER } from './utils/filterList'
 
 function isValidPackageName(projectName) {
@@ -74,14 +73,6 @@ async function init() {
   // --typescript / --ts
   // --jsx
   // --router / --vue-router
-  // --pinia
-  // --with-tests / --tests (equals to `--vitest --cypress`)
-  // --vitest
-  // --cypress
-  // --nightwatch
-  // --playwright
-  // --eslint
-  // --eslint-with-prettier (only support prettier through eslint for simplicity)
   // --force (for force overwriting)
   const argv = minimist(process.argv.slice(2), {
     alias: {
@@ -96,19 +87,7 @@ async function init() {
 
   // if any of the feature flags is set, we would skip the feature prompts
   const isFeatureFlagsUsed =
-    typeof (
-      argv.default ??
-      argv.ts ??
-      argv.jsx ??
-      argv.router ??
-      argv.pinia ??
-      argv.tests ??
-      argv.vitest ??
-      argv.cypress ??
-      argv.nightwatch ??
-      argv.playwright ??
-      argv.eslint
-    ) === 'boolean'
+    typeof (argv.default ?? argv.ts ?? argv.jsx ?? argv.router) === 'boolean'
 
   let targetDir = argv._[0]
   const defaultProjectName = !targetDir ? 'vue-project' : targetDir
@@ -116,16 +95,12 @@ async function init() {
   const forceOverwrite = argv.force
 
   let result: {
+    iconPackToUse?: string
     projectName?: string
     shouldOverwrite?: boolean
     packageName?: string
     needsTypeScript?: boolean
-    needsJsx?: boolean
     needsRouter?: boolean
-    needsPinia?: boolean
-    needsVitest?: boolean
-    needsE2eTesting?: false | 'cypress' | 'nightwatch' | 'playwright'
-    needsEslint?: boolean
     needsPrettier?: boolean
   } = {}
 
@@ -135,12 +110,7 @@ async function init() {
     //   - whether to overwrite the existing directory or not?
     //   - enter a valid package name for package.json
     // - Project language: JavaScript / TypeScript
-    // - Add JSX Support?
     // - Install Vue Router for SPA development?
-    // - Install Pinia for state management?
-    // - Add Cypress for testing?
-    // - Add Nightwatch for testing?
-    // - Add Playwright for end-to-end testing?
     // - Add ESLint for code quality?
     // - Add Prettier for code formatting?
     result = await prompts(
@@ -187,14 +157,6 @@ async function init() {
           inactive: 'No'
         },
         {
-          name: 'needsJsx',
-          type: () => (isFeatureFlagsUsed ? null : 'toggle'),
-          message: 'Add JSX Support?',
-          initial: false,
-          active: 'Yes',
-          inactive: 'No'
-        },
-        {
           name: 'needsRouter',
           type: () => (isFeatureFlagsUsed ? null : 'toggle'),
           message: 'Add Vue Router for Single Page Application development?',
@@ -203,60 +165,20 @@ async function init() {
           inactive: 'No'
         },
         {
-          name: 'needsPinia',
-          type: () => (isFeatureFlagsUsed ? null : 'toggle'),
-          message: 'Add Pinia for state management?',
-          initial: false,
-          active: 'Yes',
-          inactive: 'No'
-        },
-        {
-          name: 'needsVitest',
-          type: () => (isFeatureFlagsUsed ? null : 'toggle'),
-          message: 'Add Vitest for Unit Testing?',
-          initial: false,
-          active: 'Yes',
-          inactive: 'No'
-        },
-        {
-          name: 'needsE2eTesting',
-          type: () => (isFeatureFlagsUsed ? null : 'select'),
-          message: 'Add an End-to-End Testing Solution?',
-          initial: 0,
-          choices: (prev, answers) => [
-            { title: 'No', value: false },
-            {
-              title: 'Cypress',
-              description: answers.needsVitest
-                ? undefined
-                : 'also supports unit testing with Cypress Component Testing',
-              value: 'cypress'
-            },
-            {
-              title: 'Nightwatch',
-              description: answers.needsVitest
-                ? undefined
-                : 'also supports unit testing with Nightwatch Component Testing',
-              value: 'nightwatch'
-            },
-            {
-              title: 'Playwright',
-              value: 'playwright'
-            }
+          name: 'iconPackToUse',
+          type: 'select',
+          message: 'Which icon pack would you like to use?',
+          initial: 1,
+          choices: [
+            { title: "I don't want one!", value: 'base' },
+            { title: 'Material Design Icons', value: 'material-design-icons' },
+            { title: 'Font Awesome', value: 'font-awesome' }
           ]
-        },
-        {
-          name: 'needsEslint',
-          type: () => (isFeatureFlagsUsed ? null : 'toggle'),
-          message: 'Add ESLint for code quality?',
-          initial: false,
-          active: 'Yes',
-          inactive: 'No'
         },
         {
           name: 'needsPrettier',
           type: (prev, values) => {
-            if (isFeatureFlagsUsed || !values.needsEslint) {
+            if (isFeatureFlagsUsed) {
               return null
             }
             return 'toggle'
@@ -282,23 +204,13 @@ async function init() {
   // so we still have to assign the default values here
   const {
     projectName,
+    iconPackToUse,
     packageName = projectName ?? defaultProjectName,
     shouldOverwrite = argv.force,
-    needsJsx = argv.jsx,
     needsTypeScript = argv.typescript,
     needsRouter = argv.router,
-    needsPinia = argv.pinia,
-    needsVitest = argv.vitest || argv.tests,
-    needsEslint = argv.eslint || argv['eslint-with-prettier'],
     needsPrettier = argv['eslint-with-prettier']
   } = result
-
-  const { needsE2eTesting } = result
-  const needsCypress = argv.cypress || argv.tests || needsE2eTesting === 'cypress'
-  const needsCypressCT = needsCypress && !needsVitest
-  const needsNightwatch = argv.nightwatch || needsE2eTesting === 'nightwatch'
-  const needsNightwatchCT = needsNightwatch && !needsVitest
-  const needsPlaywright = argv.playwright || needsE2eTesting === 'playwright'
 
   const root = path.join(cwd, targetDir)
 
@@ -326,62 +238,13 @@ async function init() {
   // Render base template
   render('base')
 
-  // Add configs.
-  if (needsJsx) {
-    render('config/jsx')
-  }
-  if (needsRouter) {
-    render('config/router')
-  }
-  if (needsPinia) {
-    render('config/pinia')
-  }
-  if (needsVitest) {
-    render('config/vitest')
-  }
-  if (needsCypress) {
-    render('config/cypress')
-  }
-  if (needsCypressCT) {
-    render('config/cypress-ct')
-  }
-  if (needsNightwatch) {
-    render('config/nightwatch')
-  }
-  if (needsNightwatchCT) {
-    render('config/nightwatch-ct')
-  }
-  if (needsPlaywright) {
-    render('config/playwright')
-  }
+  render(`config/vuetify/${iconPackToUse}`)
+
   if (needsTypeScript) {
     render('config/typescript')
 
     // Render tsconfigs
     render('tsconfig/base')
-    if (needsCypress) {
-      render('tsconfig/cypress')
-    }
-    if (needsCypressCT) {
-      render('tsconfig/cypress-ct')
-    }
-    if (needsPlaywright) {
-      render('tsconfig/playwright')
-    }
-    if (needsVitest) {
-      render('tsconfig/vitest')
-    }
-    if (needsNightwatch) {
-      render('tsconfig/nightwatch')
-    }
-    if (needsNightwatchCT) {
-      render('tsconfig/nightwatch-ct')
-    }
-  }
-
-  // Render ESLint config
-  if (needsEslint) {
-    renderEslint(root, { needsTypeScript, needsCypress, needsCypressCT, needsPrettier })
   }
 
   // Render code template.
@@ -392,11 +255,7 @@ async function init() {
   render(`code/${codeTemplate}`)
 
   // Render entry file (main.js/ts).
-  if (needsPinia && needsRouter) {
-    render('entry/router-and-pinia')
-  } else if (needsPinia) {
-    render('entry/pinia')
-  } else if (needsRouter) {
+  if (needsRouter) {
     render('entry/router')
   } else {
     render('entry/default')
@@ -485,14 +344,7 @@ async function init() {
     generateReadme({
       projectName: result.projectName ?? result.packageName ?? defaultProjectName,
       packageManager,
-      needsTypeScript,
-      needsVitest,
-      needsCypress,
-      needsNightwatch,
-      needsPlaywright,
-      needsNightwatchCT,
-      needsCypressCT,
-      needsEslint
+      needsTypeScript
     })
   )
 

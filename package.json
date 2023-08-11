@@ -1,7 +1,7 @@
 {
-  "name": "create-vue",
+  "name": "create-vuetify",
   "version": "3.7.2",
-  "description": "An easy way to start a Vue project",
+  "description": "An easy way to start a Vuetify project",
   "type": "module",
   "bin": {
     "create-vue": "outfile.cjs"

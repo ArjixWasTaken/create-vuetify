@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "test:unit": "nightwatch src/components/**/__tests__/*"
-  },
-  "dependencies": {
-    "vue": "^3.3.4"
-  }
-}
