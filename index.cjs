@@ -3933,11 +3933,14 @@ Scaffolding project in ${root}...`);
   };
   render("base");
   render(`config/vuetify/${iconPackToUse}`);
+  if (needsRouter) {
+    render("config/router");
+  }
   if (needsTypeScript) {
     render("config/typescript");
     render("tsconfig/base");
   }
-  const codeTemplate = (needsTypeScript ? "typescript-" : "") + (needsRouter ? "router" : "default");
+  const codeTemplate = (needsTypeScript && "typescript-") + (needsRouter ? "router" : "default");
   render(`code/${codeTemplate}`);
   if (needsRouter) {
     render("entry/router");
