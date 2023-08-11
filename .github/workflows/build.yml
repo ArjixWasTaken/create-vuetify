@@ -22,13 +22,16 @@ jobs:
     - name: prepare dist folder
       run: |
         mkdir dist
-        mv outfile.cjs dist/index.js
+        mv outfile.cjs dist/index.cjs
         mv template dist
 
         cat > dist/package.json << EOF
           {
             "name": "create-vuetify",
-            "main": "index.js"
+            "main": "index.cjs",
+            "bin": {
+              "create-vuetify": "index.cjs"
+            }
           }
         EOF
 
