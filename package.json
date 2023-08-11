@@ -1,4 +1,7 @@
   {
     "name": "create-vuetify",
-    "main": "index.js"
+    "main": "index.cjs",
+    "bin": {
+      "create-vuetify": "index.cjs"
+    }
   }
