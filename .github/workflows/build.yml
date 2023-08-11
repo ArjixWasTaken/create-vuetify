@@ -28,7 +28,7 @@ jobs:
         cat > dist/package.json << EOF
           {
             "name": "create-vuetify",
-            "main": "index.js",
+            "main": "index.js"
           }
         EOF
 
