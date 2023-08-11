@@ -4,6 +4,8 @@ This is a fork of [create-vue](https://github.com/vuejs/create-vue), this fork w
 
 Since I've found myself following the [manual steps](https://vuetifyjs.com/en/getting-started/installation/#manual-steps) everytime I make a project, I decided to make my own template, cause why not?
 
+PS: I removed eslint and the testing configurations, as I don't really use them myself.
+
 ## Usage
 
 ```sh
