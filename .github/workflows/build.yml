@@ -22,8 +22,15 @@ jobs:
     - name: prepare dist folder
       run: |
         mkdir dist
-        mv outfile.cjs dist
+        mv outfile.cjs dist/index.js
         mv template dist
+
+        cat > dist/package.json << EOF
+          {
+            "name": "create-vuetify",
+            "main": "index.js",
+          }
+        EOF
 
     - name: Deploy
       uses: s0/git-publish-subdir-action@develop
