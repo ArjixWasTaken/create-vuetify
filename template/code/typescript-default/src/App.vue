@@ -8,7 +8,7 @@ const preferredColorScheme = usePreferredColorScheme()
 </script>
 
 <template>
-  <v-theme-provider theme="preferredColorScheme">
+  <v-theme-provider :theme="preferredColorScheme">
     <header>
       <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
 
